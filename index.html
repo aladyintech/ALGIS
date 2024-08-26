@@ -6,43 +6,59 @@
     <title>Alabama GIS Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            font-family: Arial, sans-serif;
-            display: flex;
-        }
+  body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
+    display: flex;
+}
 
-        #map {
-            width: 50%;
-            height: 100vh;
-        }
+/* Map container takes up 70% of the screen width and full height */
+#map {
+    width: 70%;
+    height: 100vh;
+    box-sizing: border-box;
+}
 
-        #control-panel {
-            width: 50%;
-            padding: 20px;
-            background-color: #f7f7f7;
-            box-sizing: border-box;
-        }
+/* Control panel container takes up the remaining 30% of the screen width */
+#control-panel {
+    width: 30%;
+    padding: 20px;
+    background-color: #f7f7f7;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;  /* Center content horizontally */
+}
 
-        #location-dropdown {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            font-size: 16px;
-        }
+/* Style for the dropdown menu */
+#location-dropdown {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
 
-        #location-info {
-            padding: 20px;
-            background-color: white;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
+/* Style for the location information box */
+#location-info {
+    padding: 20px;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    width: 100%;
+}
 
-        h4 {
-            margin-top: 0;
-        }
+h4 {
+    margin-top: 0;
+    font-size: 20px;
+    color: #333;
+    text-align: center;
+}
     </style>
 </head>
 <body>
