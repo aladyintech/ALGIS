@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alabama GIS Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            display: flex;
+        }
+
+        #map {
+            width: 50%;
+            height: 100vh;
+        }
+
+        #control-panel {
+            width: 50%;
+            padding: 20px;
+            background-color: #f7f7f7;
+            box-sizing: border-box;
+        }
+
+        #location-dropdown {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        #location-info {
+            padding: 20px;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        h4 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="map"></div>
+
+    <div id="control-panel">
+        <h4>Select a Location in Alabama</h4>
+        <select id="location-dropdown"></select>
+        <div id="location-info"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map centered on Alabama
+        const map = L.map('map').setView([32.806671, -86.791130], 7); // Coordinates for Alabama
+
+        // Add a Tile Layer (the base map)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Sample data for different locations in Alabama
+        const locations = [
+            { name: "Montgomery", lat: 32.366805, lon: -86.299969, info: "Capital of Alabama" },
+            { name: "Birmingham", lat: 33.518589, lon: -86.810357, info: "Largest city in Alabama" },
+            { name: "Mobile", lat: 30.695365, lon: -88.039891, info: "Port city in Alabama" },
+            { name: "Huntsville", lat: 34.730369, lon: -86.586104, info: "Space and Rocket Center" },
+            { name: "Tuscaloosa", lat: 33.209841, lon: -87.569173, info: "Home of the University of Alabama" }
+        ];
+
+        // Populate the dropdown menu with locations
+        const dropdown = document.getElementById('location-dropdown');
+        locations.forEach((location, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = location.name;
+            dropdown.appendChild(option);
+        });
+
+        // Function to update map and location info
+        function updateLocation(selectedIndex) {
+            const location = locations[selectedIndex];
+
+            // Set map view to the selected location
+            map.setView([location.lat, location.lon], 10);
+
+            // Add a marker for the selected location
+            L.marker([location.lat, location.lon]).addTo(map)
+                .bindPopup(`<b>${location.name}</b><br>${location.info}`).openPopup();
+
+            // Update the location information
+            const infoDiv = document.getElementById('location-info');
+            infoDiv.innerHTML = `<p><b>${location.name}</b></p><p>${location.info}</p>`;
+        }
+
+        // Initialize with the first location
+        updateLocation(0);
+
+        // Update map and information when a new location is selected
+        dropdown.addEventListener('change', function() {
+            updateLocation(this.value);
+        });
+    </script>
+
+</body>
+</html>
