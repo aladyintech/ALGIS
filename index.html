@@ -6,69 +6,88 @@
     <title>Alabama GIS Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-  body, html {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    font-family: Arial, sans-serif;
-    display: flex;
-}
+        /* Reset margin, padding, and set up basic styling */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center; /* Center the main container horizontally */
+            align-items: center; /* Center the main container vertically */
+            background-color: #f0f0f0; /* Optional: Add a background color for contrast */
+        }
 
-/* Map container takes up 70% of the screen width and full height */
-#map {
-    width: 70%;
-    height: 100vh;
-    box-sizing: border-box;
-}
+        /* The main container for the app */
+        #app {
+            display: flex;
+            width: 90%; /* Adjust this to control overall width of the site */
+            max-width: 1200px; /* Ensure the site doesn't get too wide */
+            height: 90vh; /* Adjust this to control overall height */
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle shadow */
+            border-radius: 8px; /* Optional: Add rounded corners */
+            overflow: hidden;
+            background-color: white; /* Background color for the app container */
+        }
 
-/* Control panel container takes up the remaining 30% of the screen width */
-#control-panel {
-    width: 30%;
-    padding: 20px;
-    background-color: #f7f7f7;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;  /* Center content horizontally */
-}
+        /* The map container takes up 70% of the app width and full height */
+        #map {
+            width: 70%;
+            height: 100%;
+            box-sizing: border-box;
+        }
 
-/* Style for the dropdown menu */
-#location-dropdown {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 20px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
+        /* The control panel container takes up 30% of the app width */
+        #control-panel {
+            width: 30%;
+            padding: 20px;
+            background-color: #f7f7f7;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
 
-/* Style for the location information box */
-#location-info {
-    padding: 20px;
-    background-color: white;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 16px;
-    width: 100%;
-}
+        /* Style for the dropdown menu */
+        #location-dropdown {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
 
-h4 {
-    margin-top: 0;
-    font-size: 20px;
-    color: #333;
-    text-align: center;
-}
+        /* Style for the location information box */
+        #location-info {
+            padding: 20px;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        /* Header styling */
+        h4 {
+            margin-top: 0;
+            font-size: 20px;
+            color: #333;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 
-    <div id="map"></div>
+    <div id="app">
+        <div id="map"></div>
 
-    <div id="control-panel">
-        <h4>Select a Location in Alabama</h4>
-        <select id="location-dropdown"></select>
-        <div id="location-info"></div>
+        <div id="control-panel">
+            <h4>Select a Location in Alabama</h4>
+            <select id="location-dropdown"></select>
+            <div id="location-info"></div>
+        </div>
     </div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
