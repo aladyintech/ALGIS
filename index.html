@@ -6,11 +6,32 @@
     <title>Map with Dropdown</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #map {
+            height: 500px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        #location-dropdown, #layer-dropdown {
+            padding: 8px;
+            margin-right: 10px;
+        }
+        #location-info {
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
 
 <div>
+    <label for="location-dropdown">Select a Location:</label>
     <select id="location-dropdown"></select>
+
+    <label for="layer-dropdown">Select a Layer:</label>
     <select id="layer-dropdown">
         <option value="none">None</option>
         <option value="speedData">Speed Data</option>
@@ -18,7 +39,8 @@
         <option value="highways">Highways</option>
     </select>
 </div>
-<div id="map" style="height: 500px;"></div>
+
+<div id="map"></div>
 <div id="location-info"></div>
 
 <script>
@@ -53,9 +75,9 @@
     const highwaysLayer = L.layerGroup();
 
     // Dummy layers for example (you can replace these with actual layers)
-    L.circle([32.366805, -86.299969], { radius: 5000 }).addTo(speedDataLayer);
-    L.circle([33.518589, -86.810357], { radius: 7000 }).addTo(speedLimitsLayer);
-    L.polyline([[30.695365, -88.039891], [34.730369, -86.586104]], { color: 'blue' }).addTo(highwaysLayer);
+    L.circle([32.366805, -86.299969], { radius: 5000, color: 'green' }).addTo(speedDataLayer); // Example for Montgomery
+    L.circle([33.518589, -86.810357], { radius: 7000, color: 'red' }).addTo(speedLimitsLayer); // Example for Birmingham
+    L.polyline([[30.695365, -88.039891], [34.730369, -86.586104]], { color: 'blue' }).addTo(highwaysLayer); // Example highway
 
     // Function to update map and location info
     function updateLocation(selectedIndex) {
