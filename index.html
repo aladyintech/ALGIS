@@ -1,51 +1,116 @@
 <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alabama Traffic Map with Filters</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 80vh;
+        }
+        #controls {
+            margin: 10px;
+        }
+        #controls label {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <label for="year">Select Year:</label>
+        <select id="year" onchange="loadTrafficData()">
+            <option value="2018">2018</option>
+            <option value="2019">2019</option>
+            <option value="2020">2020</option>
+            <option value="2021">2021</option>
+            <option value="2022">2022</option>
+        </select>
+
+        <label for="congestion">Min Congestion (%):</label>
+        <select id="congestion" onchange="loadTrafficData()">
+            <option value="0">0</option>
+            <option value="20">20</option>
+            <option value="40">40</option>
+            <option value="60">60</option>
+            <option value="80">80</option>
+        </select>
+
+        <label for="speed">Min Speed (mph):</label>
+        <select id="speed" onchange="loadTrafficData()">
+            <option value="0">0</option>
+            <option value="20">20</option>
+            <option value="40">40</option>
+            <option value="60">60</option>
+            <option value="80">80</option>
+        </select>
+    </div>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+        // Initialize the map and set view to Alabama
+        var map = L.map('map').setView([32.806671, -86.791130], 7); // Center on Alabama
+
+        // Add a tile layer to the map (OpenStreetMap)
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            attribution: '© OpenStreetMap'
         }).addTo(map);
 
-        // Sample data for different locations in Alabama
-        const locations = [
-            { name: "Montgomery", lat: 32.366805, lon: -86.299969, info: "Capital of Alabama" },
-            { name: "Birmingham", lat: 33.518589, lon: -86.810357, info: "Largest city in Alabama" },
-            { name: "Mobile", lat: 30.695365, lon: -88.039891, info: "Port city in Alabama" },
-            { name: "Huntsville", lat: 34.730369, lon: -86.586104, info: "Space and Rocket Center" },
-            { name: "Tuscaloosa", lat: 33.209841, lon: -87.569173, info: "Home of the University of Alabama" }
-        ];
+        var trafficLayer; // Variable to hold the traffic layer
 
-        // Populate the dropdown menu with locations
-        const dropdown = document.getElementById('location-dropdown');
-        locations.forEach((location, index) => {
-            const option = document.createElement('option');
-            option.value = index;
-            option.textContent = location.name;
-            dropdown.appendChild(option);
-        });
+        // Function to load and display traffic data
+        function loadTrafficData() {
+            var year = document.getElementById('year').value;
+            var minCongestion = parseInt(document.getElementById('congestion').value);
+            var minSpeed = parseInt(document.getElementById('speed').value);
+            var geojsonFile = 'traffic_' + year + '.geojson';
 
-        // Function to update map and location info
-        function updateLocation(selectedIndex) {
-            const location = locations[selectedIndex];
+            // Remove the existing traffic layer if present
+            if (trafficLayer) {
+                map.removeLayer(trafficLayer);
+            }
 
-            // Set map view to the selected location
-            map.setView([location.lat, location.lon], 10);
+            // Load and display the new traffic data
+            axios.get(geojsonFile).then(function(response) {
+                var trafficData = response.data;
 
-            // Add a marker for the selected location
-            L.marker([location.lat, location.lon]).addTo(map)
-                .bindPopup(<b>${location.name}</b><br>${location.info}).openPopup();
-
-            // Update the location information
-            const infoDiv = document.getElementById('location-info');
-            infoDiv.innerHTML = <p><b>${location.name}</b></p><p>${location.info}</p>;
+                trafficLayer = L.geoJSON(trafficData, {
+                    filter: function(feature) {
+                        return feature.properties.congestion >= minCongestion &&
+                               feature.properties.speed >= minSpeed;
+                    },
+                    style: function(feature) {
+                        return {
+                            color: getCongestionColor(feature.properties.congestion),
+                            weight: 2
+                        };
+                    },
+                    onEachFeature: function(feature, layer) {
+                        layer.on('click', function(e) {
+                            layer.bindPopup("Highway: " + feature.properties.name + 
+                                            "<br>Speed: " + feature.properties.speed + " mph" + 
+                                            "<br>Congestion: " + feature.properties.congestion + "%").openPopup();
+                        });
+                    }
+                }).addTo(map);
+            }).catch(function(error) {
+                console.log('Error loading GeoJSON data:', error);
+            });
         }
 
-        // Initialize with the first location
-        updateLocation(0);
+        // Function to determine color based on congestion level
+        function getCongestionColor(congestion) {
+            return congestion > 80 ? 'red' :
+                   congestion > 60 ? 'orange' :
+                   congestion > 40 ? 'yellow' :
+                   'green';
+        }
 
-        // Update map and information when a new location is selected
-        dropdown.addEventListener('change', function() {
-            updateLocation(this.value);
-        });
+        // Load the initial year's traffic data (2018)
+        loadTrafficData();
     </script>
-
 </body>
 </html>
