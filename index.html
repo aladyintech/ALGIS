@@ -3,114 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alabama Traffic Map with Filters</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <title>Alabama GIS Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
+        /* Reset margin, padding, and set up basic styling */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center; /* Center the main container horizontally */
+            align-items: center; /* Center the main container vertically */
+            background-color: #87CEEB; /* Optional: Add a background color for contrast */
+        }
+
+        /* The main container for the app */
+        #app {
+            display: flex;
+            width: 95%; /* Adjust this to control overall width of the site */
+            max-width: 1600px; /* Ensure the site doesn't get too wide */
+            height: 95vh; /* Adjust this to control overall height */
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle shadow */
+            border-radius: 8px; /* Optional: Add rounded corners */
+            overflow: hidden;
+            background-color: white; /* Background color for the app container */
+        }
+
+        /* The map container takes up 70% of the app width and full height */
         #map {
-            height: 80vh;
+            width: 70%;
+            height: 100%;
+            box-sizing: border-box;
         }
-        #controls {
-            margin: 10px;
+
+        /* The control panel container takes up 30% of the app width */
+        #control-panel {
+            width: 30%;
+            padding: 20px;
+            background-color: #f7f7f7;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
-        #controls label {
-            margin-right: 10px;
+
+        /* Style for the dropdown menu */
+        #location-dropdown {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        /* Style for the location information box */
+        #location-info {
+            padding: 20px;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        /* Header styling */
+        h4 {
+            margin-top: 0;
+            font-size: 20px;
+            color: #333;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <div id="controls">
-        <label for="year">Select Year:</label>
-        <select id="year" onchange="loadTrafficData()">
-            <option value="2018">2018</option>
-            <option value="2019">2019</option>
-            <option value="2020">2020</option>
-            <option value="2021">2021</option>
-            <option value="2022">2022</option>
-        </select>
 
-        <label for="congestion">Min Congestion (%):</label>
-        <select id="congestion" onchange="loadTrafficData()">
-            <option value="0">0</option>
-            <option value="20">20</option>
-            <option value="40">40</option>
-            <option value="60">60</option>
-            <option value="80">80</option>
-        </select>
+    <div id="app">
+        <div id="map"></div>
 
-        <label for="speed">Min Speed (mph):</label>
-        <select id="speed" onchange="loadTrafficData()">
-            <option value="0">0</option>
-            <option value="20">20</option>
-            <option value="40">40</option>
-            <option value="60">60</option>
-            <option value="80">80</option>
-        </select>
+        <div id="control-panel">
+            <h4>Select a Location in Alabama</h4>
+            <select id="location-dropdown"></select>
+            <div id="location-info"></div>
+        </div>
     </div>
-    <div id="map"></div>
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <script>
-        // Initialize the map and set view to Alabama
-        var map = L.map('map').setView([32.806671, -86.791130], 7); // Center on Alabama
 
-        // Add a tile layer to the map (OpenStreetMap)
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map centered on Alabama
+        const map = L.map('map').setView([32.806671, -86.791130], 7); // Coordinates for Alabama
+
+        // Add a Tile Layer (the base map)
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
-            attribution: '© OpenStreetMap'
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        var trafficLayer; // Variable to hold the traffic layer
+        // Sample data for different locations in Alabama
+        const locations = [
+            { name: "Montgomery", lat: 32.366805, lon: -86.299969, info: "Capital of Alabama" },
+            { name: "Birmingham", lat: 33.518589, lon: -86.810357, info: "Largest city in Alabama" },
+            { name: "Mobile", lat: 30.695365, lon: -88.039891, info: "Port city in Alabama" },
+            { name: "Huntsville", lat: 34.730369, lon: -86.586104, info: "Space and Rocket Center" },
+            { name: "Tuscaloosa", lat: 33.209841, lon: -87.569173, info: "Home of the University of Alabama" }
+        ];
 
-        // Function to load and display traffic data
-        function loadTrafficData() {
-            var year = document.getElementById('year').value;
-            var minCongestion = parseInt(document.getElementById('congestion').value);
-            var minSpeed = parseInt(document.getElementById('speed').value);
-            var geojsonFile = 'traffic_' + year + '.geojson';
+        // Populate the dropdown menu with locations
+        const dropdown = document.getElementById('location-dropdown');
+        locations.forEach((location, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = location.name;
+            dropdown.appendChild(option);
+        });
 
-            // Remove the existing traffic layer if present
-            if (trafficLayer) {
-                map.removeLayer(trafficLayer);
-            }
+        // Function to update map and location info
+        function updateLocation(selectedIndex) {
+            const location = locations[selectedIndex];
 
-            // Load and display the new traffic data
-            axios.get(geojsonFile).then(function(response) {
-                var trafficData = response.data;
+            // Set map view to the selected location
+            map.setView([location.lat, location.lon], 10);
 
-                trafficLayer = L.geoJSON(trafficData, {
-                    filter: function(feature) {
-                        return feature.properties.congestion >= minCongestion &&
-                               feature.properties.speed >= minSpeed;
-                    },
-                    style: function(feature) {
-                        return {
-                            color: getCongestionColor(feature.properties.congestion),
-                            weight: 2
-                        };
-                    },
-                    onEachFeature: function(feature, layer) {
-                        layer.on('click', function(e) {
-                            layer.bindPopup("Highway: " + feature.properties.name + 
-                                            "<br>Speed: " + feature.properties.speed + " mph" + 
-                                            "<br>Congestion: " + feature.properties.congestion + "%").openPopup();
-                        });
-                    }
-                }).addTo(map);
-            }).catch(function(error) {
-                console.log('Error loading GeoJSON data:', error);
-            });
+            // Add a marker for the selected location
+            L.marker([location.lat, location.lon]).addTo(map)
+                .bindPopup(`<b>${location.name}</b><br>${location.info}`).openPopup();
+
+            // Update the location information
+            const infoDiv = document.getElementById('location-info');
+            infoDiv.innerHTML = `<p><b>${location.name}</b></p><p>${location.info}</p>`;
         }
 
-        // Function to determine color based on congestion level
-        function getCongestionColor(congestion) {
-            return congestion > 80 ? 'red' :
-                   congestion > 60 ? 'orange' :
-                   congestion > 40 ? 'yellow' :
-                   'green';
-        }
+        // Initialize with the first location
+        updateLocation(0);
 
-        // Load the initial year's traffic data (2018)
-        loadTrafficData();
+        // Update map and information when a new location is selected
+        dropdown.addEventListener('change', function() {
+            updateLocation(this.value);
+        });
     </script>
+
 </body>
 </html>
