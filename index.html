@@ -1,140 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Map with Dropdown</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        #map {
-            height: 500px;
-            width: 100%;
-            margin-top: 20px;
-        }
-        #location-dropdown, #layer-dropdown {
-            padding: 8px;
-            margin-right: 10px;
-        }
-        #location-info {
-            margin-top: 10px;
-        }
-    </style>
-</head>
-<body>
-
-<div>
-    <label for="location-dropdown">Select a Location:</label>
-    <select id="location-dropdown"></select>
-
-    <label for="layer-dropdown">Select a Layer:</label>
-    <select id="layer-dropdown">
-        <option value="none">None</option>
-        <option value="speedData">Speed Data</option>
-        <option value="speedLimits">Speed Limits</option>
-        <option value="highways">Highways</option>
-    </select>
-</div>
-
-<div id="map"></div>
-<div id="location-info"></div>
-
-<script>
-    const map = L.map('map').setView([32.366805, -86.299969], 7);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
-
-    // Sample data for different locations in Alabama
-    const locations = [
-        { name: "Montgomery", lat: 32.366805, lon: -86.299969, info: "Capital of Alabama" },
-        { name: "Birmingham", lat: 33.518589, lon: -86.810357, info: "Largest city in Alabama" },
-        { name: "Mobile", lat: 30.695365, lon: -88.039891, info: "Port city in Alabama" },
-        { name: "Huntsville", lat: 34.730369, lon: -86.586104, info: "Space and Rocket Center" },
-        { name: "Tuscaloosa", lat: 33.209841, lon: -87.569173, info: "Home of the University of Alabama" }
-    ];
-
-    // Populate the dropdown menu with locations
-    const dropdown = document.getElementById('location-dropdown');
-    locations.forEach((location, index) => {
-        const option = document.createElement('option');
-        option.value = index;
-        option.textContent = location.name;
-        dropdown.appendChild(option);
-    });
-
-    // Layers for speed data, speed limits, and highways
-    const speedDataLayer = L.layerGroup();
-    const speedLimitsLayer = L.layerGroup();
-    const highwaysLayer = L.layerGroup();
-
-    // Dummy layers for example (you can replace these with actual layers)
-    L.circle([32.366805, -86.299969], { radius: 5000, color: 'green' }).addTo(speedDataLayer); // Example for Montgomery
-    L.circle([33.518589, -86.810357], { radius: 7000, color: 'red' }).addTo(speedLimitsLayer); // Example for Birmingham
-    L.polyline([[30.695365, -88.039891], [34.730369, -86.586104]], { color: 'blue' }).addTo(highwaysLayer); // Example highway
-
-    // Function to update map and location info
-    function updateLocation(selectedIndex) {
-        const location = locations[selectedIndex];
-
-        // Set map view to the selected location
-        map.setView([location.lat, location.lon], 10);
-
-        // Clear existing layers and markers
-        map.eachLayer((layer) => {
-            if (layer !== L.tileLayer) {
-                map.removeLayer(layer);
-            }
-        });
-
-        // Add base tile layer again
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // Add a marker for the selected location
-        L.marker([location.lat, location.lon]).addTo(map)
-            .bindPopup(`<b>${location.name}</b><br>${location.info}`).openPopup();
+        // Sample data for different locations in Alabama
+        const locations = [
+            { name: "Montgomery", lat: 32.366805, lon: -86.299969, info: "Capital of Alabama" },
+            { name: "Birmingham", lat: 33.518589, lon: -86.810357, info: "Largest city in Alabama" },
+            { name: "Mobile", lat: 30.695365, lon: -88.039891, info: "Port city in Alabama" },
+            { name: "Huntsville", lat: 34.730369, lon: -86.586104, info: "Space and Rocket Center" },
+            { name: "Tuscaloosa", lat: 33.209841, lon: -87.569173, info: "Home of the University of Alabama" }
+        ];
 
-        // Update the location information
-        const infoDiv = document.getElementById('location-info');
-        infoDiv.innerHTML = `<p><b>${location.name}</b></p><p>${location.info}</p>`;
-    }
+        // Populate the dropdown menu with locations
+        const dropdown = document.getElementById('location-dropdown');
+        locations.forEach((location, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = location.name;
+            dropdown.appendChild(option);
+        });
 
-    // Initialize with the first location
-    updateLocation(0);
+        // Function to update map and location info
+        function updateLocation(selectedIndex) {
+            const location = locations[selectedIndex];
 
-    // Update map and information when a new location is selected
-    dropdown.addEventListener('change', function() {
-        updateLocation(this.value);
-    });
+            // Set map view to the selected location
+            map.setView([location.lat, location.lon], 10);
 
-    // Update layers based on dropdown selection
-    document.getElementById('layer-dropdown').addEventListener('change', function() {
-        const selectedLayer = this.value;
+            // Add a marker for the selected location
+            L.marker([location.lat, location.lon]).addTo(map)
+                .bindPopup(<b>${location.name}</b><br>${location.info}).openPopup();
 
-        // Remove existing layers
-        speedDataLayer.remove();
-        speedLimitsLayer.remove();
-        highwaysLayer.remove();
-
-        // Add selected layer
-        if (selectedLayer === 'speedData') {
-            speedDataLayer.addTo(map);
-        } else if (selectedLayer === 'speedLimits') {
-            speedLimitsLayer.addTo(map);
-        } else if (selectedLayer === 'highways') {
-            highwaysLayer.addTo(map);
+            // Update the location information
+            const infoDiv = document.getElementById('location-info');
+            infoDiv.innerHTML = <p><b>${location.name}</b></p><p>${location.info}</p>;
         }
-    });
-</script>
+
+        // Initialize with the first location
+        updateLocation(0);
+
+        // Update map and information when a new location is selected
+        dropdown.addEventListener('change', function() {
+            updateLocation(this.value);
+        });
+    </script>
 
 </body>
 </html>
