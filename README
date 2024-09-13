@@ -1,0 +1,128 @@
+Please take a look at this skeleton backend to enter. 
+
+Make sure the following are installed: 
+
+pip install Flask
+pip install pandas
+pip install openpyxl
+pip install sqlite3
+
+Skeleton: 
+
+from flask import Flask, request, jsonify, render_template
+import sqlite3
+import pandas as pd
+import os
+
+app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = 'uploads'
+
+# Create uploads directory if it doesn't exist
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
+
+# Database initialization
+def init_db():
+    conn = sqlite3.connect('speed_data.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS SpeedData (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            year INTEGER,
+            location TEXT,
+            highway TEXT,
+            speed INTEGER
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+# Function to insert data into the database
+def insert_data(df):
+    conn = sqlite3.connect('speed_data.db')
+    cursor = conn.cursor()
+    for _, row in df.iterrows():
+        cursor.execute('''
+            INSERT INTO SpeedData (year, location, highway, speed)
+            VALUES (?, ?, ?, ?)
+        ''', (row['Year'], row['Location'], row['Highway'], row['Speed']))
+    conn.commit()
+    conn.close()
+
+# Route to upload Excel file and process it
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file uploaded'}), 400
+    
+    file = request.files['file']
+    
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+
+    if file and file.filename.endswith('.xlsx'):
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        file.save(file_path)
+
+        # Process Excel file with pandas
+        df = pd.read_excel(file_path)
+        
+        # Assuming Excel has columns 'Year', 'Location', 'Highway', 'Speed'
+        if set(['Year', 'Location', 'Highway', 'Speed']).issubset(df.columns):
+            insert_data(df)
+            return jsonify({'success': 'Data uploaded and stored successfully'}), 200
+        else:
+            return jsonify({'error': 'Invalid Excel format'}), 400
+
+    return jsonify({'error': 'Invalid file format, please upload .xlsx files'}), 400
+
+# Route to fetch speed data
+@app.route('/get-speed-data', methods=['GET'])
+def get_speed_data():
+    conn = sqlite3.connect('speed_data.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM SpeedData')
+    data = cursor.fetchall()
+    conn.close()
+
+    # Convert to a list of dictionaries
+    result = [{'id': row[0], 'year': row[1], 'location': row[2], 'highway': row[3], 'speed': row[4]} for row in data]
+    
+    return jsonify(result)
+
+if __name__ == '__main__':
+    init_db()
+    app.run(debug=True)
+
+
+  To add to the frontend: 
+
+<form id="uploadForm" enctype="multipart/form-data">
+    <input type="file" name="file" id="fileInput" />
+    <button type="submit">Upload Excel</button>
+</form>
+
+<script>
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const fileInput = document.getElementById('fileInput').files[0];
+        const formData = new FormData();
+        formData.append('file', fileInput);
+
+        fetch('/upload', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('File uploaded and data processed successfully!');
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+</script>
+
+              If there are any issues please let me know.
